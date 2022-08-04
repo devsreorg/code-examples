@@ -1,0 +1,88 @@
+---
+Parameters:
+  SecurityGroupDescription: # name of the parameter
+    Description: Security Group Description
+    Type: String
+  KeyName: # name of the parameter (keyname)
+    Description: Select an existing keypair
+    Type: AWS::EC2::KeyPair::KeyName
+  Env: # dev, test, prod
+    Description: Select the environment
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+    ConstraintDescription: must be a valid environment.
+Mappings:
+  RegionMap:
+    ap-south-1:
+      HVM64: ami-006d3995d3a6b963b
+    ap-southeast-2:
+      HVM64: ami-0300dc03c13eb7660
+Conditions:
+  CreateEC2Condition: !Equals
+    - !Ref Env
+    - dev
+Resources:
+  MyInstance: # 1 name of the resource
+    Type: AWS::EC2::Instance
+    DeletionPolicy: Retain
+    Condition: CreateEC2Condition
+    Properties:
+      AvailabilityZone: ap-south-1a
+      ImageId: !FindInMap [RegionMap, !Ref AWS::Region, HVM64]
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      SecurityGroups:
+        - !Ref SSHSecurityGroup
+        - !Ref ServerSecurityGroup
+        - !Ref UDPSecurityGroup
+  MyEIP: # 2 elastic ip for the instance
+    Type: AWS::EC2::EIP
+    DeletionPolicy: Retain
+    Condition: CreateEC2Condition
+    Properties:
+      InstanceId: !Ref MyInstance
+  SSHSecurityGroup: # 3 ssh for the instance
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+  ServerSecurityGroup: # 4 http for the instance
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Ref SecurityGroupDescription
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+  UDPSecurityGroup: # 5 udp for the instance
+    Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: Retain
+    Properties:
+      GroupDescription: simulating config drift
+      SecurityGroupIngress:
+        - IpProtocol: udp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0          
+Outputs:
+  Environment:
+    Description: Env
+    Value: !Ref Env
+  GlobalSSHSecurityGroup:
+    Description: Global SG for SSH access
+    Value: !Ref SSHSecurityGroup
+    Export:
+      Name: GlobalSSHGroup
