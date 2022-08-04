@@ -1,0 +1,53 @@
+---
+Parameters:
+  SecurityGroupDescription: # name of the parameter
+    Description: Security Group Description
+    Type: String
+  KeyName: # name of the parameter (keyname)
+    Description: Select an existing keypair
+    Type: AWS::EC2::KeyPair::KeyName
+
+Mappings:
+  RegionMap: 
+    ap-south-1: 
+      "HVM64": "ami-006d3995d3a6b963b"
+    ap-southeast-2: 
+      "HVM64": "ami-0300dc03c13eb7660"
+
+Resources:
+  MyInstance: # 1 name of the resource 
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: ap-south-1a
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", HVM64]
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      SecurityGroups:
+        - !Ref SSHSecurityGroup
+        - !Ref ServerSecurityGroup
+  MyEIP: # 2 elastic ip for the instance
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref MyInstance
+  SSHSecurityGroup: # 3 ssh for the instance
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+  ServerSecurityGroup: # 4 http for the instance
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Ref SecurityGroupDescription
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+Outputs:
+  RegionOutput:
+    Description: Region
+    Value: !Ref "AWS::Region"

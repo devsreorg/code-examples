@@ -1,0 +1,29 @@
+{
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "Update:*",
+            "Principal": "*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Deny",
+            "Action": "Update:*",
+            "Principal": "*",
+            "Resource": "LogicalResourceId/ServerSecurityGroup"
+        },
+        {
+            "Effect": "Deny",
+            "Action": "Update:*",
+            "Principal": "*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "ResourceType": [
+                        "AWS::EC2::Instance"
+                    ]
+                }
+            }
+        }
+    ]
+}
