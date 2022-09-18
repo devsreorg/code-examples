@@ -1,0 +1,26 @@
+---
+- name: Start Services
+  hosts: target-01
+  become: yes
+  tasks:
+    - name: Install apache
+      apt:
+        name: apache2
+        update_cache: yes
+        state: present
+
+    - name: Start apache
+      service:
+        name: apache2
+        state: started
+
+    - name: Install nginx
+      apt:
+        name: nginx
+        update_cache: yes
+        state: present
+
+    - name: Start nginx
+      service:
+        name: nginx
+        state: started

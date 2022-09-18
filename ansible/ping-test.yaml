@@ -1,0 +1,6 @@
+---
+- name: Play 1
+  hosts: all
+  tasks:
+    - name: ping test
+      ping:

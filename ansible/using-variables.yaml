@@ -1,0 +1,10 @@
+---
+- name: Use Variable
+  hosts: target-01
+  vars:
+    nameserver: 8.8.8.8
+  tasks:
+    - name: Add DNS entry in resolv.conf
+      lineinfile:
+        path: /etc/resolv.conf
+        line: 'nameserver {{ nameserver }}'
