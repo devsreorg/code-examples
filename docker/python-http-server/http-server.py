@@ -17,5 +17,6 @@ class HandleRequests(http.server.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     start_http_server(METRICS_PORT)
+    #start_http_server(APP_PORT)
     server = http.server.HTTPServer(('localhost', APP_PORT), HandleRequests)
     server.serve_forever()
